@@ -169,9 +169,7 @@ export class GameComponent implements OnInit {
 
 		dice.addTo(this._container);
 
-
-
-		
+	
 		for (let i = grids; i > 0; i--) {
 			for (let j = 0; j < i; j++ ) {
 				new WHS.Cylinder({
@@ -215,10 +213,8 @@ export class GameComponent implements OnInit {
 					})
 				],
 		
-				material: new THREE.MeshPhongMaterial({
-					color: 0x447F8B,
-					transparent: true,
-					opacity: 1
+				material: new THREE.MeshBasicMaterial({
+					color: 0x447F8B
 				}),
 
 				position: {
@@ -243,10 +239,8 @@ export class GameComponent implements OnInit {
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({
-				color: 0x447F8B,
-				transparent: true,
-				opacity: 0.2
+			material: new THREE.MeshBasicMaterial({
+				color: 0x000055
 			}),
 
 			position: {
@@ -260,7 +254,7 @@ export class GameComponent implements OnInit {
 			geometry: {
 				width: 200,
 				height: 200,
-				depth: .1
+				depth: 0
 			},
 	
 			modules: [
@@ -269,10 +263,10 @@ export class GameComponent implements OnInit {
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({
+			material: new THREE.MeshBasicMaterial({
 				color: 0x447F8B,
 				transparent: true,
-				opacity: 0.0
+				opacity: 0
 			}),
 
 			position: {
@@ -295,10 +289,8 @@ export class GameComponent implements OnInit {
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({
-				color: 0x447F8B,
-				transparent: true,
-				opacity: 1
+			material: new THREE.MeshBasicMaterial({
+				color: 0x447F8B
 			}),
 
 			position: {
@@ -321,10 +313,8 @@ export class GameComponent implements OnInit {
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({
-				color: 0x447F8B,
-				transparent: true,
-				opacity: 1
+			material: new THREE.MeshBasicMaterial({
+				color: 0x447F8B
 			}),
 
 			position: {
@@ -351,10 +341,8 @@ export class GameComponent implements OnInit {
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({
-				color: 0x447F8B,
-				transparent: true,
-				opacity: 1
+			material: new THREE.MeshBasicMaterial({
+				color: 0x447F8B
 			}),
 
 			position: {
