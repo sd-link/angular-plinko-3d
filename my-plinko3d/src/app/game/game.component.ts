@@ -91,11 +91,6 @@ export class GameComponent implements OnInit {
 	};
 
 
-
-
-
-
-
 	constructor() { }
 	private createContainer() {
     this._container = new App([ 
@@ -114,9 +109,9 @@ export class GameComponent implements OnInit {
 
 		const offsetY = -25;
 		const grids = 14;
-		const diceSize = 3.5;
+		const diceSize = 3.7;
 		const gridWidth = 6;
-		const barWidth = 0.2;
+		const barWidth = 0.4;
 		
 
 		// dice
@@ -158,13 +153,13 @@ export class GameComponent implements OnInit {
 			modules: [
 				new PHYSICS.BoxModule({
 					mass: 5,
-					restitution: 1,
+					restitution: 1.5,
 					friction: 2,
 				})
 			],
 	
 			material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
-			position: new THREE.Vector3(0, (gridWidth + 1) * grids + offsetY, 0)
+			position: new THREE.Vector3(- gridWidth / 2, gridWidth * (grids + 1) * Math.sin(Math.PI / 3) + offsetY, 0)
 		});
 
 		dice.addTo(this._container);
@@ -180,7 +175,7 @@ export class GameComponent implements OnInit {
 					},
 				
 					material: new THREE.MeshBasicMaterial({
-						color: 0xffffff
+						color: 0x447F8B
 					}),
 				
 					modules: [
@@ -199,10 +194,10 @@ export class GameComponent implements OnInit {
 					}
 				}).addTo(this._container);
 			}
-			// bottom
-			new WHS.Box({ 
+
+ 			new WHS.Box({ 
 				geometry: {
-					width: .1,
+					width: barWidth / 2,
 					height: gridWidth * Math.sin(Math.PI / 3),
 					depth: gridWidth
 				},
@@ -214,7 +209,9 @@ export class GameComponent implements OnInit {
 				],
 		
 				material: new THREE.MeshBasicMaterial({
-					color: 0x447F8B
+					color: 0x447F8B,
+					transparent: true,
+					opacity: 0
 				}),
 
 				position: {
@@ -230,7 +227,7 @@ export class GameComponent implements OnInit {
 			geometry: {
 				width: 400,
 				height: 400,
-				depth: .1
+				depth: barWidth 
 			},
 	
 			modules: [
@@ -278,8 +275,8 @@ export class GameComponent implements OnInit {
 		// bottom
     new WHS.Box({ 
 			geometry: {
-				width: (gridWidth + 1)  * grids,
-				height: .1,
+				width: gridWidth * (grids + 2),
+				height: barWidth / 2,
 				depth: gridWidth
 			},
 	
@@ -302,8 +299,8 @@ export class GameComponent implements OnInit {
 		// left
     new WHS.Box({ 
 			geometry: {
-				width: gridWidth * grids,
-				height: .2,
+				width: gridWidth * (grids + 2),
+				height: barWidth / 2,
 				depth: gridWidth
 			},
 	
@@ -318,8 +315,8 @@ export class GameComponent implements OnInit {
 			}),
 
 			position: {
-				x: - gridWidth / 2 - gridWidth * grids / 3,
-				y: offsetY + gridWidth * grids / 2 * Math.sin(Math.PI/3)
+				x: -gridWidth * Math.sin(Math.PI/3) * (grids / 3 + 0.5) ,
+				y: offsetY + gridWidth * (grids + 2) / 2 * Math.sin(Math.PI/3)
 			},
 
 			rotation: {
@@ -330,8 +327,8 @@ export class GameComponent implements OnInit {
 		// right
     new WHS.Box({ 
 			geometry: {
-				width: gridWidth * grids,
-				height: .2,
+				width: gridWidth * (grids + 2),
+				height: barWidth / 2,
 				depth: gridWidth
 			},
 	
@@ -346,8 +343,8 @@ export class GameComponent implements OnInit {
 			}),
 
 			position: {
-				x: - gridWidth / 2 + gridWidth * grids / 3,
-				y: offsetY + gridWidth * grids / 2 * Math.sin(Math.PI/3)
+				x: gridWidth * Math.sin(Math.PI / 3) * (grids / 3 - 0.5) - barWidth,
+				y: offsetY + gridWidth * (grids + 2) / 2 * Math.sin(Math.PI/3)
 			},
 
 			rotation: {
