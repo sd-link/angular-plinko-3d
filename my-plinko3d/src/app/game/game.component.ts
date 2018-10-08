@@ -36,7 +36,7 @@ export class GameComponent implements OnInit {
 		stats: 'fps', // fps, ms, mb or false if not need.
 		autoresize: 'window',
 	
-		gravity: [0, -100, 0],
+		gravity: [0, -1, 0],
 	
 		camera: {
 			position: [0, 10, 50]
@@ -60,8 +60,8 @@ export class GameComponent implements OnInit {
 	};
 	appDefaults = {
 		camera: {
-			position: new THREE.Vector3(0, 10, 50),
-			far: 200
+			position: new THREE.Vector3(0, 0, 100),
+			far: 300
 		},
 	
 		rendering: {
@@ -111,60 +111,267 @@ export class GameComponent implements OnInit {
   }
 
   public build() {
-    // Sphere
-    const sphere = new WHS.Cylinder({ // Create sphere comonent.
-			geometry: {
-				radiusTop: 2,
-				radiusBottom: 1,
-				height: 2,
-				radiusSegments: 32,
-				heightSegments: 32,
-			},
+
+		const offsetY = -25;
+		const grids = 14;
+		const diceSize = 3.5;
+		const gridWidth = 6;
+		const barWidth = 0.2;
 		
-			modules: [
-				new PHYSICS.CylinderModule({
-					mass: 2,
-					restitution: 1
-				})
-			],
-		
-			material: new THREE.MeshPhongMaterial({
-				color: this.colors.mesh
+
+		// dice
+		const loader = new THREE.TextureLoader();
+		const diceMaterials = [
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice1.png'),
+					transparent: true 
 			}),
-		
-			position: new THREE.Vector3(0, 20, 0)
-		});
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice2.png'),
+					transparent: true 
+			}),
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice3.png'),
+					transparent: true 
+			}),
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice4.png'),
+					transparent: true 
+			}),
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice5.png'),
+					transparent: true 
+			}),
+			new THREE.MeshLambertMaterial({
+					map: loader.load( 'assets/model/dice6.png'),
+					transparent: true 
+			})
+	 	];
 
-
-		
-
-    sphere.addTo(this._container);
-    // Plane
-    const plane = new WHS.Plane({
+    const dice = new WHS.Box({ 
 			geometry: {
-				width: 500,
-				height: 500
+				width: diceSize,
+				height: diceSize,
+				depth: diceSize
 			},
 	
 			modules: [
-				new PHYSICS.PlaneModule({
+				new PHYSICS.BoxModule({
+					mass: 5,
+					restitution: 1,
+					friction: 2,
+				})
+			],
+	
+			material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
+			position: new THREE.Vector3(0, (gridWidth + 1) * grids + offsetY, 0)
+		});
+
+		dice.addTo(this._container);
+
+
+
+		
+		for (let i = grids; i > 0; i--) {
+			for (let j = 0; j < i; j++ ) {
+				new WHS.Cylinder({
+					geometry: {
+						radiusTop: barWidth,
+						radiusBottom: barWidth,
+						height: gridWidth
+					},
+				
+					material: new THREE.MeshBasicMaterial({
+						color: 0xffffff
+					}),
+				
+					modules: [
+						new PHYSICS.CylinderModule({
+							mass: 0,
+						})
+					],
+
+					rotation: {
+						x: Math.PI/2
+					},
+					
+					position: {
+						x: j * gridWidth - gridWidth * i / 2,
+						y: gridWidth * Math.sin(Math.PI/3) * (grids - i + 1) + offsetY
+					}
+				}).addTo(this._container);
+			}
+			// bottom
+			new WHS.Box({ 
+				geometry: {
+					width: .1,
+					height: gridWidth * Math.sin(Math.PI / 3),
+					depth: gridWidth
+				},
+		
+				modules: [
+					new PHYSICS.BoxModule({
+						mass: 0
+					})
+				],
+		
+				material: new THREE.MeshPhongMaterial({
+					color: 0x447F8B,
+					transparent: true,
+					opacity: 1
+				}),
+
+				position: {
+					y: offsetY + gridWidth * Math.sin(Math.PI/3) / 2,
+					x: (i - grids / 2 - 1) * gridWidth
+				}
+			}).addTo(this._container);
+		}
+
+		
+		// back
+		new WHS.Box({ 
+			geometry: {
+				width: 400,
+				height: 400,
+				depth: .1
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
 					mass: 0
 				})
 			],
 	
-			material: new THREE.MeshPhongMaterial({color: 0x447F8B}),
-	
-			rotation: {
-				x: -Math.PI / 2
+			material: new THREE.MeshPhongMaterial({
+				color: 0x447F8B,
+				transparent: true,
+				opacity: 0.2
+			}),
+
+			position: {
+				z: - gridWidth / 2,
+				y: offsetY
 			}
-		});
-		plane.addTo(this._container);
+		}).addTo(this._container);
+
+		// front
+		new WHS.Box({ 
+			geometry: {
+				width: 200,
+				height: 200,
+				depth: .1
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: 0
+				})
+			],
+	
+			material: new THREE.MeshPhongMaterial({
+				color: 0x447F8B,
+				transparent: true,
+				opacity: 0.0
+			}),
+
+			position: {
+				z: gridWidth / 2 + .1,
+				y: offsetY
+			}
+		}).addTo(this._container);
+
+		// bottom
+    new WHS.Box({ 
+			geometry: {
+				width: (gridWidth + 1)  * grids,
+				height: .1,
+				depth: gridWidth
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: 0
+				})
+			],
+	
+			material: new THREE.MeshPhongMaterial({
+				color: 0x447F8B,
+				transparent: true,
+				opacity: 1
+			}),
+
+			position: {
+				y: offsetY,
+				x: - gridWidth / 2
+			}
+		}).addTo(this._container);
+
+		// left
+    new WHS.Box({ 
+			geometry: {
+				width: gridWidth * grids,
+				height: .2,
+				depth: gridWidth
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: 0
+				})
+			],
+	
+			material: new THREE.MeshPhongMaterial({
+				color: 0x447F8B,
+				transparent: true,
+				opacity: 1
+			}),
+
+			position: {
+				x: - gridWidth / 2 - gridWidth * grids / 3,
+				y: offsetY + gridWidth * grids / 2 * Math.sin(Math.PI/3)
+			},
+
+			rotation: {
+				z: Math.PI / 3
+			}
+		}).addTo(this._container);
+
+		// right
+    new WHS.Box({ 
+			geometry: {
+				width: gridWidth * grids,
+				height: .2,
+				depth: gridWidth
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: 0
+				})
+			],
+	
+			material: new THREE.MeshPhongMaterial({
+				color: 0x447F8B,
+				transparent: true,
+				opacity: 1
+			}),
+
+			position: {
+				x: - gridWidth / 2 + gridWidth * grids / 3,
+				y: offsetY + gridWidth * grids / 2 * Math.sin(Math.PI/3)
+			},
+
+			rotation: {
+				z: Math.PI * 2 / 3
+			}
+		}).addTo(this._container);
 
 		
     // Lights
     new WHS.PointLight({
       light: {
-        intensity: 0.5,
+        intensity: 0.2,
         distance: 100
       },
 
@@ -177,7 +384,7 @@ export class GameComponent implements OnInit {
 
     new WHS.AmbientLight({
       light: {
-        intensity: 0.4
+        intensity: 1
       }
     }).addTo(this._container);
 
@@ -196,3 +403,36 @@ export class GameComponent implements OnInit {
 
  
 }
+
+ 		// const teapot = new WHS.Importer({
+		// 	url: `assets/model/utah-teapot-light.json`,
+		
+		// 	modules: [
+		// 		new PHYSICS.ConcaveModule({
+		// 			friction: 0.5,
+		// 			mass: 1,
+		// 			restitution: 0.5,
+		// 			path: `assets/model/utah-teapot-light.json`,
+		// 			scale: new THREE.Vector3(1, 2, 1)
+		// 		}),
+		// 		new WHS.TextureModule({
+		// 			url: `assets/dice.png`,
+		// 			repeat: new THREE.Vector2(1, 1)
+		// 		})
+		// 	],
+		
+		// 	useCustomMaterial: true,
+		
+		// 	material: new THREE.MeshPhongMaterial({
+		// 		shading: THREE.SmoothShading,
+		// 		side: THREE.DoubleSide
+		// 	}),
+		
+		// 	position: {
+		// 		y: 200
+		// 	},
+		
+		// 	scale: [1,1,1]
+		// });
+
+		// teapot.addTo(this._container);
