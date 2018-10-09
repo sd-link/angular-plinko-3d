@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, Input} from '@angular/core';
 import * as THREE from 'three-full';
 import {
   CameraComponentParams,
@@ -31,6 +31,7 @@ export class GameComponent implements OnInit {
       },
     }
 	};
+	basePath = window.location.href;
 
 	world = {
 		stats: 'fps', // fps, ms, mb or false if not need.
@@ -79,7 +80,7 @@ export class GameComponent implements OnInit {
 		},
 	
 		physics: {
-			ammo: 'https://rawgit.com/WhitestormJS/physics-module-ammonext/master/vendor/ammo.js'
+			ammo: `${this.basePath}/assets/ammo.js`
 		}
 	};
  
@@ -90,13 +91,15 @@ export class GameComponent implements OnInit {
 		softbody: 0x434B7F
 	};
 
+	
+
 
 	constructor() { }
 	private createContainer() {
     this._container = new App([ 
 				new WHS.ElementModule(),
 				new WHS.SceneModule(),
-				new WHS.DefineModule('camera', new WHS.PerspectiveCamera(Object.assign(this.appDefaults.camera, {fov: 75}))),
+				new WHS.DefineModule('camera', new WHS.OrthographicCamera({	camera: {far: 1000	},position: {	z:500}})),
 				new WHS.RenderingModule(this.appDefaults.rendering, {shadow: true}),
 				new PHYSICS.WorldModule(this.appDefaults.physics),
 				new WHS.OrbitControlsModule(),
@@ -107,11 +110,13 @@ export class GameComponent implements OnInit {
 
   public build() {
 
-		const offsetY = -25;
+		const offsetY = -200;
 		const grids = 14;
-		const diceSize = 3.7;
-		const gridWidth = 6;
-		const barWidth = 0.4;
+		const diceSize = 20;
+		const gridWidth = 40;
+		const barWidth = 3;
+		const backWidth = 1500;
+		const backHeight = 1000;
 		
 
 		// dice
@@ -225,8 +230,8 @@ export class GameComponent implements OnInit {
 		// back
 		new WHS.Box({ 
 			geometry: {
-				width: 400,
-				height: 400,
+				width: backWidth,
+				height: backHeight,
 				depth: barWidth 
 			},
 	
@@ -242,15 +247,15 @@ export class GameComponent implements OnInit {
 
 			position: {
 				z: - gridWidth / 2,
-				y: offsetY
+				y: 0
 			}
 		}).addTo(this._container);
 
 		// front
 		new WHS.Box({ 
 			geometry: {
-				width: 200,
-				height: 200,
+				width: backWidth,
+				height: backHeight,
 				depth: 0
 			},
 	
@@ -268,7 +273,7 @@ export class GameComponent implements OnInit {
 
 			position: {
 				z: gridWidth / 2 + .1,
-				y: offsetY
+				y: 0
 			}
 		}).addTo(this._container);
 
@@ -381,7 +386,6 @@ export class GameComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.rendererContainer.nativeElement.querySelector('.world'));
     this.createContainer();
     this.build();
   }
