@@ -17,7 +17,7 @@ export class GameComponent implements OnInit {
 	@ViewChild('rendererContainer') rendererContainer: ElementRef;
   @Input() public camera: CameraComponentParams = {
     position: {
-      y: 10,
+      y: 20,
       z: 50
     },
   };
@@ -38,16 +38,10 @@ export class GameComponent implements OnInit {
 		autoresize: 'window',
 	
 		gravity: [0, -1, 0],
-	
-		camera: {
-			position: [0, 10, 50]
-		},
-	
 		rendering: {
 			background: {
 				color: 0x162129
 			},
-	
 			pixelRatio: false,
 	
 			renderer: {
@@ -100,11 +94,11 @@ export class GameComponent implements OnInit {
 				new WHS.ElementModule(),
 				new WHS.SceneModule(),
 				new WHS.DefineModule('camera', new WHS.OrthographicCamera({	camera: {far: 1000	},position: {	z:500}})),
-				new WHS.RenderingModule(this.appDefaults.rendering, {shadow: true}),
+				new WHS.RenderingModule(this.appDefaults.rendering, {shadow: false}),
 				new PHYSICS.WorldModule(this.appDefaults.physics),
 				new WHS.OrbitControlsModule(),
 				// new StatsModule(),
-				new WHS.ResizeModule()
+				// new WHS.ResizeModule()
 		]);
   }
 
@@ -114,9 +108,13 @@ export class GameComponent implements OnInit {
 		const grids = 14;
 		const diceSize = 20;
 		const gridWidth = 40;
-		const barWidth = 3;
+		const barWidth = 4;
 		const backWidth = 1500;
 		const backHeight = 1000;
+
+
+		// bar material
+
 		
 
 		// dice
@@ -157,17 +155,24 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 5,
+					mass: 500,
 					restitution: 1.5,
-					friction: 2,
+					friction: 1,
 				})
 			],
 	
 			material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
-			position: new THREE.Vector3(- gridWidth / 2, gridWidth * (grids + 1) * Math.sin(Math.PI / 3) + offsetY, 0)
+			position: new THREE.Vector3(- gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), gridWidth * (grids + 1) * Math.sin(Math.PI / 3) + offsetY, 0)
 		});
 
 		dice.addTo(this._container);
+
+		dice.on('collision', (otherObject, v, r, contactNormal) => {
+			if (otherObject.component.modules[0].data.type === 'cylinder') {
+				otherObject.material.color.setHex(0xff0000)
+				// otherObject.material.color = 0xff0000;
+			}
+		});
 
 	
 		for (let i = grids; i > 0; i--) {
@@ -348,7 +353,7 @@ export class GameComponent implements OnInit {
 			}),
 
 			position: {
-				x: gridWidth * Math.sin(Math.PI / 3) * (grids / 3 - 0.5) - barWidth,
+				x: gridWidth * Math.sin(Math.PI / 3) * (grids / 3 - 0.5) - barWidth ,
 				y: offsetY + gridWidth * (grids + 2) / 2 * Math.sin(Math.PI/3)
 			},
 
