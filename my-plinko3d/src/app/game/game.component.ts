@@ -113,9 +113,9 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 500,
-					restitution: 1.5,
-					friction: 1,
+					mass: BasicParam.diceMass,
+					restitution: BasicParam.diceRestitution,
+					friction: BasicParam.diceFriction,
 				})
 			],
 	
