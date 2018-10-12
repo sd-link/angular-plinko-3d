@@ -1,6 +1,8 @@
 import { Component, OnInit, ElementRef, ViewChild, Input} from '@angular/core';
 import * as THREE from 'three-full';
 import {BasicParam} from './config';
+import { PlinkoService } from '../../service/plinko.service';
+
 
 import {
   CameraComponentParams,
@@ -17,7 +19,10 @@ import * as PHYSICS from 'physics-module-ammonext'
 export class GameComponent implements OnInit {
 	private _container: App;	
 	private dice: any;
+	private diceMaterials: any;
 	fitstRoll = true;
+
+	subscription = null;
 	
 
 	@ViewChild('rendererContainer') rendererContainer: ElementRef;
@@ -49,14 +54,19 @@ export class GameComponent implements OnInit {
 		}
 	};
  
-	colors = {
-		bg: 0x162129,
-		plane: 0x447F8B,
-		mesh: 0xF2F2F2,
-		softbody: 0x434B7F
-	};
 
-	constructor() { }
+	constructor( public plinkoService: PlinkoService) { 
+    this.subscription = this.plinkoService.eventOccured.subscribe(event => {
+			this.fallDice();
+    });
+	}
+	ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+		}
+	}
+
 	private createContainer() {
     this._container = new App([ 
 				new WHS.ElementModule(),
@@ -77,7 +87,7 @@ export class GameComponent implements OnInit {
 
 		// dice
 		const loader = new THREE.TextureLoader();
-		const diceMaterials = [
+		this.diceMaterials = [
 			new THREE.MeshLambertMaterial({
 					map: loader.load( 'assets/model/dice1.png'),
 					transparent: true 
@@ -104,33 +114,33 @@ export class GameComponent implements OnInit {
 			})
 	 	];
 
-    this.dice = new WHS.Box({ 
-			geometry: {
-				width: BasicParam.diceSize,
-				height: BasicParam.diceSize,
-				depth: BasicParam.diceSize
-			},
+    // this.dice = new WHS.Box({ 
+		// 	geometry: {
+		// 		width: BasicParam.diceSize,
+		// 		height: BasicParam.diceSize,
+		// 		depth: BasicParam.diceSize
+		// 	},
 	
-			modules: [
-				new PHYSICS.BoxModule({
-					mass: BasicParam.diceMass,
-					restitution: BasicParam.diceRestitution,
-					friction: BasicParam.diceFriction,
-				})
-			],
+		// 	modules: [
+		// 		new PHYSICS.BoxModule({
+		// 			mass: BasicParam.diceMass,
+		// 			restitution: BasicParam.diceRestitution,
+		// 			friction: BasicParam.diceFriction,
+		// 		})
+		// 	],
 	
-			material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
-			position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
-		});
+		// 	material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
+		// 	position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
+		// });
 
-		this.dice.on('collision', (otherObject, v, r, contactNormal) => {
-			if (otherObject.component.modules[0].data.type === 'cylinder') {
-				otherObject.material.color.setHex(0xffffff)
-				setTimeout(()=>{
-					otherObject.material.color.setHex(0x447F8B)
-				}, 3000);
-			}
-		});
+		// this.dice.on('collision', (otherObject, v, r, contactNormal) => {
+		// 	if (otherObject.component.modules[0].data.type === 'cylinder') {
+		// 		otherObject.material.color.setHex(0xffffff)
+		// 		setTimeout(()=>{
+		// 			otherObject.material.color.setHex(0x447F8B)
+		// 		}, 3000);
+		// 	}
+		// });
 
 	
 		for (let i = BasicParam.grids; i > 0; i--) {
@@ -351,12 +361,34 @@ export class GameComponent implements OnInit {
     this.build();
 	}
 	
-	dropDice() {
- 		if (this.fitstRoll) {
-			this.dice.addTo(this._container);
-			this.fitstRoll = false;
-		} 
-		this.dice.position = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
+	start() {
+		this.plinkoService.fallDice();
+	}
+	
+	fallDice() {
+ 		// if (this.fitstRoll) {
+		// 	this.dice.addTo(this._container);
+		// 	this.fitstRoll = false;
+		// } 
+		// this.dice.position = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
+		new WHS.Box({ 
+			geometry: {
+				width: BasicParam.diceSize,
+				height: BasicParam.diceSize,
+				depth: BasicParam.diceSize
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: BasicParam.diceMass,
+					restitution: BasicParam.diceRestitution,
+					friction: BasicParam.diceFriction,
+				})
+			],
+	
+			material: this.diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
+			position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
+		}).addTo(this._container);
  	}
 }
 
