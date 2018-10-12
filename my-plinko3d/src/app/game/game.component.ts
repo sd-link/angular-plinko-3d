@@ -145,7 +145,6 @@ export class GameComponent implements OnInit {
 			});
 			this.holeObject[k].addTo(this._container);
 
-
 			if (i === 0) break;
 			
 			// bars
@@ -377,8 +376,9 @@ export class GameComponent implements OnInit {
 			this.diceObject[i]['visible'] = false;
 
 			this.diceObject[i].on('collision', (otherObject, v, r, contactNormal) => {
-				if (this.diceObject[i]['visible']) {
-					console.log(otherObject)
+				
+				if (this.diceObject[i]['visible'] && otherObject.position.y === BasicParam.offsetY) {
+					console.log(otherObject.position.y, BasicParam.offsetY)
 				}
 			});
 		};
