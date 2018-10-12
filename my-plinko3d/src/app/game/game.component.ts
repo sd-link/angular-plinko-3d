@@ -21,6 +21,9 @@ export class GameComponent implements OnInit {
 	private diceMaterials: any;
 
 	subscription = null;
+
+	holeObject: any[];
+	diceObject: any[];
 	
 
 	@ViewChild('rendererContainer') rendererContainer: ElementRef;
@@ -28,19 +31,11 @@ export class GameComponent implements OnInit {
 	basePath = window.location.href;
  
 	appDefaults = {
-		camera: {
-			position: new THREE.Vector3(0, 0, 100),
-			far: 300
-		},
-	
 		rendering: {
 			bgColor: 0x162129,
-	
 			pixelRatio: window.devicePixelRatio,
-	
 			renderer: {
 				antialias: true,
-	
 				shadowMap: {
 					type: THREE.PCFSoftShadowMap
 				}
@@ -72,7 +67,7 @@ export class GameComponent implements OnInit {
 				new WHS.DefineModule('camera', new WHS.OrthographicCamera({	camera: {far: 1000},position: {z:500}})),
 				new WHS.RenderingModule(this.appDefaults.rendering, {shadow: false}),
 				new PHYSICS.WorldModule(this.appDefaults.physics),
-				// new WHS.OrbitControlsModule(),
+				new WHS.OrbitControlsModule(),
 				// new StatsModule(),
 				// new WHS.ResizeModule()
 		]);
@@ -83,7 +78,7 @@ export class GameComponent implements OnInit {
 
 
 
-		// dice
+		// dice mertarial
 		const loader = new THREE.TextureLoader();
 		this.diceMaterials = [
 			new THREE.MeshLambertMaterial({
@@ -112,38 +107,12 @@ export class GameComponent implements OnInit {
 			})
 	 	];
 
-    // this.dice = new WHS.Box({ 
-		// 	geometry: {
-		// 		width: BasicParam.diceSize,
-		// 		height: BasicParam.diceSize,
-		// 		depth: BasicParam.diceSize
-		// 	},
-	
-		// 	modules: [
-		// 		new PHYSICS.BoxModule({
-		// 			mass: BasicParam.diceMass,
-		// 			restitution: BasicParam.diceRestitution,
-		// 			friction: BasicParam.diceFriction,
-		// 		})
-		// 	],
-	
-		// 	material: diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
-		// 	position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
-		// });
-
-		// this.dice.on('collision', (otherObject, v, r, contactNormal) => {
-		// 	if (otherObject.component.modules[0].data.type === 'cylinder') {
-		// 		otherObject.material.color.setHex(0xffffff)
-		// 		setTimeout(()=>{
-		// 			otherObject.material.color.setHex(0x447F8B)
-		// 		}, 3000);
-		// 	}
-		// });
-
+ 
+		this.holeObject = [];
 	
 		for (let i = BasicParam.grids; i > -1; i--) {
 			// bottom
-			new WHS.Box({ 
+			this.holeObject.push(new WHS.Box({ 
 				geometry: {
 					width: BasicParam.gridWidth - 3 ,
 					height: BasicParam.barWidth / 2,
@@ -164,13 +133,24 @@ export class GameComponent implements OnInit {
 					y: BasicParam.offsetY,
 					x: BasicParam.gridWidth * i - (BasicParam.grids / 2) * BasicParam.gridWidth - BasicParam.gridWidth * .5
 				}
-			}).addTo(this._container);
+			}));
+
+			const k = BasicParam.grids - i;
+			this.holeObject[k]['isHole'] = true;
+			this.holeObject[k].on('collision', (otherObject, v, r, contactNormal) => {
+				this.holeObject[k].material.color.setHex(0xffffff);
+				setTimeout(()=>{
+					this.holeObject[k].material.color.setHex(0x447F8B)
+				}, 300);
+			});
+			this.holeObject[k].addTo(this._container);
+
 
 			if (i === 0) break;
 			
-
+			// bars
 			for (let j = 0; j < i; j++ ) {
-				new WHS.Cylinder({
+				const bar = new WHS.Cylinder({
 					geometry: {
 						radiusTop: BasicParam.barWidth,
 						radiusBottom: BasicParam.barWidth,
@@ -195,7 +175,16 @@ export class GameComponent implements OnInit {
 						x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2,
 						y: BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - i + 1) + BasicParam.offsetY
 					}
-				}).addTo(this._container);
+				});
+				
+				bar.on('collision', (otherObject, v, r, contactNormal) => {
+					bar.material.color.setHex(0xffffff);
+					setTimeout(()=>{
+						bar.material.color.setHex(0x447F8B)
+					}, 500);
+				});				
+				
+				bar.addTo(this._container);
 			}
 
 			// vertical lines
@@ -333,19 +322,81 @@ export class GameComponent implements OnInit {
 		}).addTo(this._container);
 
 		
-    // Lights
-    new WHS.PointLight({
-      light: {
-        intensity: 0.2,
-        distance: 100
-      },
 
-      shadow: {
-        fov: 90
-      },
+		new WHS.Box({ 
+			geometry: {
+				width: BasicParam.gridWidth * BasicParam.dicesPerScreen * 2,
+				height: BasicParam.barWidth / 2,
+				depth: BasicParam.gridWidth
+			},
+	
+			modules: [
+				new PHYSICS.BoxModule({
+					mass: 0
+				})
+			],
+	
+			material: new THREE.MeshBasicMaterial({
+				color: 0x447F8B
+			}),
 
-      position: new THREE.Vector3(0, 10, 10)
-    }).addTo(this._container);
+			position: {
+				x: 0,
+				y: - (BasicParam.grids / 2 + 2) * BasicParam.gridWidth * Math.sin(Math.PI/3) 
+			}
+		}).addTo(this._container);
+
+
+
+		// dices
+		this.diceObject = []
+		for (let i = 0; i < BasicParam.dicesPerScreen; i ++) {
+			const dice =new WHS.Box({ 
+				geometry: {
+					width: BasicParam.diceSize,
+					height: BasicParam.diceSize,
+					depth: BasicParam.diceSize
+				},
+		
+				modules: [
+					new PHYSICS.BoxModule({
+						mass: BasicParam.diceMass,
+						restitution: BasicParam.diceRestitution,
+						friction: BasicParam.diceFriction,
+					})
+				],
+		
+				material: new THREE.MeshPhongMaterial({color: 0x447F8B}),
+				position: {
+					x: BasicParam.diceSize * (i - BasicParam.dicesPerScreen / 2),
+					y: - BasicParam.grids / 2 * BasicParam.gridWidth * Math.sin(Math.PI/3) 
+				} 
+			});
+			this.diceObject.push(dice);
+			this.diceObject[i].addTo(this._container);
+			this.diceObject[i]['visible'] = false;
+
+			this.diceObject[i].on('collision', (otherObject, v, r, contactNormal) => {
+				if (this.diceObject[i]['visible']) {
+					console.log(otherObject)
+				}
+			});
+		};
+
+		
+		// Lights
+		new WHS.PointLight({
+			light: {
+				intensity: 0.2,
+				distance: 100
+			},
+
+			shadow: {
+				fov: 90
+			},
+
+			position: new THREE.Vector3(0, 10, 10)
+		}).addTo(this._container);
 
     new WHS.AmbientLight({
       light: {
@@ -373,24 +424,52 @@ export class GameComponent implements OnInit {
 		// 	this.fitstRoll = false;
 		// } 
 		// this.dice.position = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
-		new WHS.Box({ 
-			geometry: {
-				width: BasicParam.diceSize,
-				height: BasicParam.diceSize,
-				depth: BasicParam.diceSize
-			},
+		// let diceObject = new WHS.Box({ 
+		// 	geometry: {
+		// 		width: BasicParam.diceSize,
+		// 		height: BasicParam.diceSize,
+		// 		depth: BasicParam.diceSize
+		// 	},
 	
-			modules: [
-				new PHYSICS.BoxModule({
-					mass: BasicParam.diceMass,
-					restitution: BasicParam.diceRestitution,
-					friction: BasicParam.diceFriction,
-				})
-			],
+		// 	modules: [
+		// 		new PHYSICS.BoxModule({
+		// 			mass: BasicParam.diceMass,
+		// 			restitution: BasicParam.diceRestitution,
+		// 			friction: BasicParam.diceFriction,
+		// 		})
+		// 	],
 	
-			material: this.diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
-			position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
-		}).addTo(this._container);
+		// 	material: this.diceMaterials,//new THREE.MeshPhongMaterial({color: 0x447F8B}),
+		// 	position: new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0)
+		// });
+		// console.log(this._container)
+		// diceObject.on('collision', (otherObject, v, r, contactNormal) => {
+		// 	console.log(diceObject)
+
+			// if (otherObject.component.modules[0].data.type === 'cylinder') {
+			// 	otherObject.material.color.setHex(0xffffff)
+			// 	setTimeout(()=>{
+			// 		otherObject.material.color.setHex(0x447F8B)
+			// 	}, 3000);
+			// }
+		// });
+
+		// diceObject.addTo(this._container);
+		// this._container. remove(diceObject);
+
+		for (let i = 0; i < BasicParam.dicesPerScreen; i ++) {
+			if (this.diceObject[i]['visible']) continue;
+			this.diceObject[i]['material'] = this.diceMaterials;
+			this.diceObject[i]['position'] = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0);
+			this.diceObject[i]['visible'] = true;
+			// this.diceObject[i].modules[0] = new PHYSICS.BoxModule({
+			// 	mass: BasicParam.diceMass,
+			// 	restitution: BasicParam.diceRestitution,
+			// 	friction: BasicParam.diceFriction,
+			// });
+			console.log(this.diceObject[i]);
+			break;
+		}
  	}
 }
 
