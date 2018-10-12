@@ -18,9 +18,7 @@ import * as PHYSICS from 'physics-module-ammonext'
 })
 export class GameComponent implements OnInit {
 	private _container: App;	
-	private dice: any;
 	private diceMaterials: any;
-	fitstRoll = true;
 
 	subscription = null;
 	
@@ -143,7 +141,34 @@ export class GameComponent implements OnInit {
 		// });
 
 	
-		for (let i = BasicParam.grids; i > 0; i--) {
+		for (let i = BasicParam.grids; i > -1; i--) {
+			// bottom
+			new WHS.Box({ 
+				geometry: {
+					width: BasicParam.gridWidth - 3 ,
+					height: BasicParam.barWidth / 2,
+					depth: BasicParam.gridWidth
+				},
+		
+				modules: [
+					new PHYSICS.BoxModule({
+						mass: 0
+					})
+				],
+		
+				material: new THREE.MeshBasicMaterial({
+					color: 0x447F8B
+				}),
+
+				position: {
+					y: BasicParam.offsetY,
+					x: BasicParam.gridWidth * i - (BasicParam.grids / 2) * BasicParam.gridWidth - BasicParam.gridWidth * .5
+				}
+			}).addTo(this._container);
+
+			if (i === 0) break;
+			
+
 			for (let j = 0; j < i; j++ ) {
 				new WHS.Cylinder({
 					geometry: {
@@ -173,6 +198,7 @@ export class GameComponent implements OnInit {
 				}).addTo(this._container);
 			}
 
+			// vertical lines
  			new WHS.Box({ 
 				geometry: {
 					width: BasicParam.barWidth / 2,
@@ -189,7 +215,7 @@ export class GameComponent implements OnInit {
 				material: new THREE.MeshBasicMaterial({
 					color: 0x447F8B,
 					transparent: true,
-					opacity: 0
+					opacity: 0.5
 				}),
 
 				position: {
@@ -247,30 +273,6 @@ export class GameComponent implements OnInit {
 			position: {
 				z: BasicParam.gridWidth / 2 + .1,
 				y: 0
-			}
-		}).addTo(this._container);
-
-		// bottom
-    new WHS.Box({ 
-			geometry: {
-				width: BasicParam.gridWidth * (BasicParam.grids + 2),
-				height: BasicParam.barWidth / 2,
-				depth: BasicParam.gridWidth
-			},
-	
-			modules: [
-				new PHYSICS.BoxModule({
-					mass: 0
-				})
-			],
-	
-			material: new THREE.MeshBasicMaterial({
-				color: 0x447F8B
-			}),
-
-			position: {
-				y: BasicParam.offsetY,
-				x: - BasicParam.gridWidth / 2
 			}
 		}).addTo(this._container);
 
