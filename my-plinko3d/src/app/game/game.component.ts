@@ -31,6 +31,9 @@ export class GameComponent implements OnInit {
 	planAll: any[];
 	routerObject = [];
 
+
+	startable: boolean = true;
+
 	@ViewChild('rendererContainer') rendererContainer: ElementRef;
 
 	basePath = window.location.href;
@@ -86,31 +89,86 @@ export class GameComponent implements OnInit {
 		// dice mertarial
 		const loader = new THREE.TextureLoader();
 		this.diceMaterials = [
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice1.png'),
-					transparent: true 
-			}),
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice2.png'),
-					transparent: true 
-			}),
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice3.png'),
-					transparent: true 
-			}),
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice4.png'),
-					transparent: true 
-			}),
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice5.png'),
-					transparent: true 
-			}),
-			new THREE.MeshLambertMaterial({
-					map: loader.load( 'assets/model/dice6.png'),
-					transparent: true 
-			})
-	 	];
+			[
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice1.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice2.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice3.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice4.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice5.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/red/dice6.png'),
+						transparent: true 
+				})
+			],
+			[
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice1.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice2.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice3.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice4.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice5.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/green/dice6.png'),
+						transparent: true 
+				})
+			],
+			[
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice1.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice2.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice3.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice4.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice5.png'),
+						transparent: true 
+				}),
+				new THREE.MeshLambertMaterial({
+						map: loader.load( 'assets/model/blue/dice6.png'),
+						transparent: true 
+				})
+			]
+		];
+
 
  
 		this.holeObject = [];
@@ -437,6 +495,7 @@ export class GameComponent implements OnInit {
 					setTimeout(() => {
 						this.diceObject[i]['position'] = new THREE.Vector3(BasicParam.diceSize * (i - BasicParam.dicesPerScreen / 2), tableY + BasicParam.diceSize / 2, 0);
 						this.diceIsEnable[i] = true;
+						this.startable = true;
 					}, BasicParam.delayPeriod);
 					this.diceIsReached[i] = true;
 				}
@@ -481,22 +540,25 @@ export class GameComponent implements OnInit {
 	}
 	
 	fallDice() {
-		console.log(this.plinkoService.hole);
+		this.startable = false;
 		
+
 		this.planAll = [];
 		this.planOne = [];
 		this.getAllPlan(0);
 		const plans = this.planAll.length;
 		const selectedPlan = Math.floor(Math.random() * plans);
-
+		
+		console.log(this.plinkoService.dice, this.plinkoService.hole);
 		console.log(this.planAll[selectedPlan]);
 		
 		this.makeRoute(this.planAll[selectedPlan]);
+		this.holeObject[BasicParam.grids - this.plinkoService.hole].material.color.setHex(0xff00ff);
  
 
 		for (let i = 0; i < BasicParam.dicesPerScreen; i ++) {
 			if (this.diceIsEnable[i]) {
-				this.diceObject[i]['material'] = this.diceMaterials;
+				this.diceObject[i]['material'] = this.diceMaterials[this.plinkoService.dice];
 				this.diceObject[i]['position'] = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0);
 				this.diceObject[i]['visible'] = true;
 				this.diceIsEnable[i] = false;
