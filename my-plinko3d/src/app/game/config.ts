@@ -1,7 +1,7 @@
 export const enum BasicParam {
   offsetY = -200,
   grids = 14,
-  diceSize = 18,
+  diceSize = 22,
   diceMass = 5000,
   diceRestitution = 0.5,
   diceFriction = 0.5,
