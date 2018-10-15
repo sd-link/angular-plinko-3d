@@ -268,17 +268,17 @@ export class GameComponent implements OnInit {
 							width: 2,
 							height: BasicParam.diceSize * 2,
 							depth: BasicParam.gridWidth,
-							segments: 10,
+							segments: 5,
 						},
 					
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 1.00,
+							opacity: 0.00,
 						}),
 					
 						modules: [
-							new PHYSICS.CylinderModule({
+							new PHYSICS.BoxModule({
 								mass: 0,
 							})
 						],
@@ -288,7 +288,7 @@ export class GameComponent implements OnInit {
 						},
 						
 						position: {
-							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .24 : -.24),
+							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .25 : -.25),
 							y: BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - i + 1.5) + BasicParam.offsetY
 						}
 					});
@@ -298,17 +298,17 @@ export class GameComponent implements OnInit {
 							width: 2,
 							height: BasicParam.diceSize * 2,
 							depth: BasicParam.gridWidth,
-							segments: 20,
+							segments: 5,
 						},
 					
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 1.00,
+							opacity: 0.00,
 						}),
 					
 						modules: [
-							new PHYSICS.CylinderModule({
+							new PHYSICS.BoxModule({
 								mass: 0,
 							})
 						],
@@ -364,7 +364,7 @@ export class GameComponent implements OnInit {
 			geometry: {
 				width: BasicParam.backWidth,
 				height: BasicParam.backHeight,
-				depth: BasicParam.barWidth 
+				depth: BasicParam.barWidth + BasicParam.barWidth
 			},
 	
 			modules: [
@@ -506,7 +506,7 @@ export class GameComponent implements OnInit {
 					width: BasicParam.diceSize,
 					height: BasicParam.diceSize,
 					depth: BasicParam.diceSize,
-					segments: 10,
+					segments: 5,
 				},
 		
 				modules: [
@@ -631,9 +631,9 @@ export class GameComponent implements OnInit {
 			for (let j = 0; j < i + 1; j ++) {
 				for (let k = 0; k < 2; k ++) {
 					const routY = BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - (i + 1) + 1.5) + BasicParam.offsetY;
-					this.routerObject[i][j][k]['position']['y'] = routY;
-					 
+					this.routerObject[i][j][k]['position']['y'] = routY + BasicParam.diceSize * 2 / 3;
 					this.routerObject[i][j][k]['position']['z'] = 0;
+
 					this.routerSkewObject[i][j][k]['position']['y'] = routY - BasicParam.diceSize / 2;
 					this.routerSkewObject[i][j][k]['position']['x'] = j * BasicParam.gridWidth - BasicParam.gridWidth * (i + 1) / 2 + BasicParam.gridWidth * (k ? .3 : -.3);
 					this.routerSkewObject[i][j][k]['position']['z'] = -100;
