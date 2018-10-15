@@ -7,7 +7,7 @@ export const enum BasicParam {
   diceFriction = 1,
   dicesPerScreen = 10,
   gridWidth = 40,
-  barWidth = 4,
+  barWidth = 5,
   backWidth = 1500,
   backHeight = 1000,
   delayPeriod = 2000

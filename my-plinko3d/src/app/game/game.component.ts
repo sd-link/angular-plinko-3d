@@ -261,7 +261,7 @@ export class GameComponent implements OnInit {
 				for (let k = 0; k < 2; k ++) {
 					this.routerObject[i - 1][j][k] = new WHS.Box({
 						geometry: {
-							width: 1,
+							width: 2,
 							height: BasicParam.diceSize,
 							depth: BasicParam.gridWidth
 						},
