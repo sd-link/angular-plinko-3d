@@ -223,7 +223,7 @@ export class GameComponent implements OnInit {
 					geometry: {
 						radiusTop: BasicParam.barWidth,
 						radiusBottom: BasicParam.barWidth,
-						height: BasicParam.gridWidth
+						height: BasicParam.gridWidth * 0.7
 					},
 				
 					material: new THREE.MeshBasicMaterial({
@@ -259,28 +259,27 @@ export class GameComponent implements OnInit {
 				this.routerObject[i - 1][j] = [];
 
 				for (let k = 0; k < 2; k ++) {
-					this.routerObject[i - 1][j][k] = new WHS.Cylinder({
+					this.routerObject[i - 1][j][k] = new WHS.Box({
 						geometry: {
-							radiusTop: BasicParam.barWidth / 2,
-							radiusBottom: BasicParam.barWidth / 2,
-							height: BasicParam.gridWidth / 3
+							width: 1,
+							height: BasicParam.diceSize,
+							depth: BasicParam.gridWidth
 						},
 					
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 0.2
+							opacity: 0.00
 						}),
 					
 						modules: [
 							new PHYSICS.CylinderModule({
-								mass: 0,
-
+								mass: 0
 							})
 						],
 	
 						rotation: {
-							x: Math.PI/2
+							z: k ? - Math.PI / 6 : Math.PI / 6
 						},
 						
 						position: {
@@ -384,7 +383,9 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 0
+					mass: 0,
+					restitution: 1,
+					friction: 2,
 				})
 			],
 	
@@ -412,7 +413,9 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 0
+					mass: 0,
+					restitution: 1,
+					friction: 2,
 				})
 			],
 	
@@ -525,9 +528,7 @@ export class GameComponent implements OnInit {
 
     // Start the app
 		this._container.start();
-		
-		setInterval(()=>{
-		},100);
+
   }
 
   ngOnInit() {
@@ -559,7 +560,7 @@ export class GameComponent implements OnInit {
 		for (let i = 0; i < BasicParam.dicesPerScreen; i ++) {
 			if (this.diceIsEnable[i]) {
 				this.diceObject[i]['material'] = this.diceMaterials[this.plinkoService.dice];
-				this.diceObject[i]['position'] = new THREE.Vector3(- BasicParam.gridWidth / 2 + (5 * Math.random() * (Math.random()>.5?1:-1)), BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0);
+				this.diceObject[i]['position'] = new THREE.Vector3(- BasicParam.gridWidth / 2, BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0);
 				this.diceObject[i]['visible'] = true;
 				this.diceIsEnable[i] = false;
 				this.diceIsReached[i]= false;
