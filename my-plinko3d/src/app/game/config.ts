@@ -1,7 +1,7 @@
 export const enum BasicParam {
   offsetY = -200,
   grids = 14,
-  diceSize = 20,
+  diceSize = 18,
   diceMass = 5000,
   diceRestitution = 0.5,
   diceFriction = 1,
@@ -9,5 +9,6 @@ export const enum BasicParam {
   gridWidth = 40,
   barWidth = 4,
   backWidth = 1500,
-  backHeight = 1000
+  backHeight = 1000,
+  delayPeriod = 3000
 }
