@@ -30,6 +30,7 @@ export class GameComponent implements OnInit {
 	planOne: number[];
 	planAll: any[];
 	routerObject = [];
+	routerSkewObject = [];
 
 
 	startable: boolean = true;
@@ -75,7 +76,7 @@ export class GameComponent implements OnInit {
 				new WHS.DefineModule('camera', new WHS.OrthographicCamera({	camera: {far: 1000},position: {z:500}})),
 				new WHS.RenderingModule(this.appDefaults.rendering, {shadow: false}),
 				new PHYSICS.WorldModule(this.appDefaults.physics),
-				// new WHS.OrbitControlsModule(),
+				new WHS.OrbitControlsModule(),
 				// new StatsModule(),
 				// new WHS.ResizeModule()
 		]);
@@ -173,6 +174,7 @@ export class GameComponent implements OnInit {
  
 		this.holeObject = [];
 		this.routerObject = [];
+		this.routerSkewObject = [];
  
 
 		for (let i = BasicParam.grids; i > -1; i --) {
@@ -214,6 +216,7 @@ export class GameComponent implements OnInit {
 
 			// router
 			this.routerObject[i - 1] = [];
+			this.routerSkewObject[i - 1] = [];
 			
 			// bars
 			for (let j = 0; j < i; j++ ) {
@@ -257,24 +260,56 @@ export class GameComponent implements OnInit {
 
 				// router
 				this.routerObject[i - 1][j] = [];
+				this.routerSkewObject[i - 1][j] = [];
 
 				for (let k = 0; k < 2; k ++) {
 					this.routerObject[i - 1][j][k] = new WHS.Box({
 						geometry: {
 							width: 2,
-							height: BasicParam.diceSize,
-							depth: BasicParam.gridWidth
+							height: BasicParam.diceSize * 2,
+							depth: BasicParam.gridWidth,
+							segments: 10,
 						},
 					
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 0.00
+							opacity: 1.00,
 						}),
 					
 						modules: [
 							new PHYSICS.CylinderModule({
-								mass: 0
+								mass: 0,
+							})
+						],
+	
+						rotation: {
+							z: k ? - Math.PI / 40 : Math.PI / 40
+						},
+						
+						position: {
+							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .24 : -.24),
+							y: BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - i + 1.5) + BasicParam.offsetY
+						}
+					});
+
+					this.routerSkewObject[i - 1][j][k] = new WHS.Box({
+						geometry: {
+							width: 2,
+							height: BasicParam.diceSize * 2,
+							depth: BasicParam.gridWidth,
+							segments: 20,
+						},
+					
+						material: new THREE.MeshBasicMaterial({
+							color: 0x447F8B,
+							transparent: true,
+							opacity: 1.00,
+						}),
+					
+						modules: [
+							new PHYSICS.CylinderModule({
+								mass: 0,
 							})
 						],
 	
@@ -283,12 +318,13 @@ export class GameComponent implements OnInit {
 						},
 						
 						position: {
-							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .3 : -.3),
+							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .24 : -.24),
 							y: BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - i + 1.5) + BasicParam.offsetY
 						}
 					});
 
 					this.routerObject[i - 1][j][k].addTo(this._container);
+					this.routerSkewObject[i - 1][j][k].addTo(this._container);
 
 
 				}
@@ -469,7 +505,8 @@ export class GameComponent implements OnInit {
 				geometry: {
 					width: BasicParam.diceSize,
 					height: BasicParam.diceSize,
-					depth: BasicParam.diceSize
+					depth: BasicParam.diceSize,
+					segments: 10,
 				},
 		
 				modules: [
@@ -477,6 +514,7 @@ export class GameComponent implements OnInit {
 						mass: BasicParam.diceMass,
 						restitution: BasicParam.diceRestitution,
 						friction: BasicParam.diceFriction,
+						pressure: 500
 					})
 				],
 		
@@ -528,7 +566,8 @@ export class GameComponent implements OnInit {
 
     // Start the app
 		this._container.start();
-
+		new WHS.Loop(() => {
+		}).start(this._container);
   }
 
   ngOnInit() {
@@ -587,10 +626,39 @@ export class GameComponent implements OnInit {
 
 	makeRoute(strPath) {
 		const path = JSON.parse(strPath);
+		let fk = null;
 		for (let i = 0; i < BasicParam.grids; i ++) {
 			for (let j = 0; j < i + 1; j ++) {
 				for (let k = 0; k < 2; k ++) {
-					this.routerObject[i][j][k]['position']['z'] = (path[i] === j && path[i+1] - path[i] === k) ? -100: 0;
+					const routY = BasicParam.gridWidth * Math.sin(Math.PI/3) * (BasicParam.grids - (i + 1) + 1.5) + BasicParam.offsetY;
+					this.routerObject[i][j][k]['position']['y'] = routY;
+					 
+					this.routerObject[i][j][k]['position']['z'] = 0;
+					this.routerSkewObject[i][j][k]['position']['y'] = routY - BasicParam.diceSize / 2;
+					this.routerSkewObject[i][j][k]['position']['x'] = j * BasicParam.gridWidth - BasicParam.gridWidth * (i + 1) / 2 + BasicParam.gridWidth * (k ? .3 : -.3);
+					this.routerSkewObject[i][j][k]['position']['z'] = -100;
+					if (path[i] === j) {
+						let sk = path[i+1] - path[i];
+						
+						if (sk === k) {
+							this.routerObject[i][j][k]['position']['z'] = -100;
+							this.routerSkewObject[i][j][k]['position']['z'] = -100;
+						} else {
+							if (fk === sk) {
+								this.routerObject[i][j][k]['position']['z'] = -100;
+								this.routerSkewObject[i][j][k]['position']['z'] = 0;
+								 			
+							} else {
+								this.routerObject[i][j][k]['position']['z'] = 0;
+								this.routerSkewObject[i][j][k]['position']['z'] = -100;
+							}
+							fk = sk;
+						}
+						
+					} else {
+						this.routerObject[i][j][k]['position']['z'] = -100;
+					}
+					
 
 				}
 			}
