@@ -500,7 +500,7 @@ export class GameComponent implements OnInit {
 		}).addTo(this._container);
 
 		
-		const tableY = - 1000;//- (BasicParam.grids / 2 + 2) * BasicParam.gridWidth * Math.sin(Math.PI / 3);
+		const tableY = - 300;//- (BasicParam.grids / 2 + 2) * BasicParam.gridWidth * Math.sin(Math.PI / 3);
 		new WHS.Box({ 
 			geometry: {
 				width: BasicParam.gridWidth * BasicParam.dicesPerScreen * 2,
@@ -695,17 +695,20 @@ export class GameComponent implements OnInit {
 							
 						if (this.dicePath[l][i] === j) {
 							let sk = this.dicePath[l][i+1] - this.dicePath[l][i];
-
-							if (fk === sk) {
-								// this.routerObject[i][j][k].position.z = -100;
-								// this.routerSkewObject[i][j][k].position.z = 0;
-								this.diceRouterInfo[l][i] = {j: j, k: k, v: false};
-							} else {
-								// this.routerObject[i][j][k].position.z = 0;
-								// this.routerSkewObject[i][j][k].position.z = -100;
-								this.diceRouterInfo[l][i] = {j: j, k: k, v: true};
+							
+							if (sk !== k) {
+ 
+								if (fk === sk) {
+									// this.routerObject[i][j][k].position.z = -100;
+									// this.routerSkewObject[i][j][k].position.z = 0;
+									this.diceRouterInfo[l][i] = {j: j, k: k, v: false};
+								} else {
+									// this.routerObject[i][j][k].position.z = 0;
+									// this.routerSkewObject[i][j][k].position.z = -100;
+									this.diceRouterInfo[l][i] = {j: j, k: k, v: true};
+								}
+								fk = sk;
 							}
-							fk = sk;
 						}
 
 					}
@@ -716,6 +719,3 @@ export class GameComponent implements OnInit {
 	}
 }
 
- 
- 
- 
