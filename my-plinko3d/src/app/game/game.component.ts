@@ -566,6 +566,7 @@ export class GameComponent implements OnInit {
 						this.diceObject[i]['position'] = new THREE.Vector3(BasicParam.diceSize * (i - BasicParam.dicesPerScreen / 2), tableY + BasicParam.diceSize / 2, 0);
 						this.diceIsEnable[i] = true;
 						this.dicePath[i] = null;
+						this.diceRouterInfo[i] = [];
 					}, BasicParam.delayPeriod);
 					this.diceIsReached[i] = true;
 				}
@@ -664,17 +665,25 @@ export class GameComponent implements OnInit {
 		for (let d = 0; d < BasicParam.dicesPerScreen; d ++) {
 			if (!this.dicePath[d]) continue;
 			for (let i = 0; i < BasicParam.grids; i ++) {
+				
 				const {j, k, v} = this.diceRouterInfo[d][i];
-				const r = this.diceObject[d].position.y < this.routerObject[i][j][k].position.y + BasicParam.gridWidth / 2 && 
-									this.diceObject[d].position.y > this.routerObject[i][j][k].position.y - BasicParam.gridWidth / 2;
-				this.routerObject[i][j][k].position.z = (v && r) ? 0 : -100;
-				this.routerSkewObject[i][j][k].position.z = (v || !r) ? -100 : 0;
+				const r = this.diceObject[d].position.y < this.routerSkewObject[i][j][k].position.y + BasicParam.gridWidth   && 
+									this.diceObject[d].position.y > this.routerSkewObject[i][j][k].position.y - BasicParam.gridWidth / 2 ;
+				const oz = this.routerObject[i][j][k].position.z;
+				const sz = this.routerSkewObject[i][j][k].position.z;
+				if (r) {
+					this.routerObject[i][j][k].position.z = v ? d : (oz === d ? -100 : oz);
+					this.routerSkewObject[i][j][k].position.z = v ? (sz === d ? -100 : sz) : d;
+				} else {
+					this.routerObject[i][j][k].position.z = (oz === d ? -100 : oz);
+					this.routerSkewObject[i][j][k].position.z = (sz === d ? -100 : sz);
+				}
 			}
 		}
 	}
 
 	makeRoute() {
-		let fk = null;
+		
 		this.diceRouterInfo = [];
 		for (let i = 0; i < BasicParam.grids; i ++) {
 			for (let j = 0; j < i + 1; j ++) {
@@ -687,6 +696,7 @@ export class GameComponent implements OnInit {
 
 
 		for (let l = 0; l < BasicParam.dicesPerScreen; l ++) {
+			let fk = null;
 			this.diceRouterInfo[l] = [];
 			if (!this.dicePath[l]) continue;
 			for (let i = 0; i < BasicParam.grids; i ++) {
@@ -699,12 +709,10 @@ export class GameComponent implements OnInit {
 							if (sk !== k) {
  
 								if (fk === sk) {
-									// this.routerObject[i][j][k].position.z = -100;
-									// this.routerSkewObject[i][j][k].position.z = 0;
+
 									this.diceRouterInfo[l][i] = {j: j, k: k, v: false};
 								} else {
-									// this.routerObject[i][j][k].position.z = 0;
-									// this.routerSkewObject[i][j][k].position.z = -100;
+
 									this.diceRouterInfo[l][i] = {j: j, k: k, v: true};
 								}
 								fk = sk;
@@ -716,6 +724,8 @@ export class GameComponent implements OnInit {
 				}
 			}
 		}
+		console.log(this.diceRouterInfo)
 	}
+	
 }
 

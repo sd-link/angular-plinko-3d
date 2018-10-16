@@ -26,7 +26,7 @@ export class PlinkoService {
       this.isReady = false;
       setTimeout (() => {
         this.isReady = true;
-      }, 1000);
+      }, 2000);
     }
 
   }
