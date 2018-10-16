@@ -26,6 +26,8 @@ export class GameComponent implements OnInit {
 	diceObject: any[];
 	diceIsEnable: boolean[];
 	diceIsReached: boolean[];
+	dicePath: any[];
+	diceRouterInfo: any[];
 	
 	planOne: number[];
 	planAll: any[];
@@ -33,7 +35,6 @@ export class GameComponent implements OnInit {
 	routerSkewObject = [];
 
 
-	startable: boolean = true;
 
 	@ViewChild('rendererContainer') rendererContainer: ElementRef;
 
@@ -86,7 +87,7 @@ export class GameComponent implements OnInit {
 	
   public build() {
 
-
+		this.dicePath = [];
 
 		// dice mertarial
 		const loader = new THREE.TextureLoader();
@@ -227,7 +228,7 @@ export class GameComponent implements OnInit {
 					geometry: {
 						radiusTop: BasicParam.barWidth,
 						radiusBottom: BasicParam.barWidth,
-						height: BasicParam.gridWidth * 0.7
+						height: BasicParam.gridWidth * 0.6
 					},
 				
 					material: new THREE.MeshBasicMaterial({
@@ -236,7 +237,7 @@ export class GameComponent implements OnInit {
 				
 					modules: [
 						new PHYSICS.CylinderModule({
-							mass: 0,
+							mass: 0
 						})
 					],
 
@@ -277,7 +278,7 @@ export class GameComponent implements OnInit {
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 0.00,
+							opacity: 1.00,
 						}),
 					
 						modules: [
@@ -287,11 +288,11 @@ export class GameComponent implements OnInit {
 						],
 	
 						// rotation: {
-						// 	z: k ? - Math.PI / 40 : Math.PI / 40
+						// 	z: k ? - Math.PI / 15 : Math.PI / 15
 						// },
 						
 						position: {
-							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .25 : -.25),
+							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .24 : -.24),
 							y: routY + BasicParam.diceSize * 2 / 3
 						}
 					});
@@ -307,7 +308,7 @@ export class GameComponent implements OnInit {
 						material: new THREE.MeshBasicMaterial({
 							color: 0x447F8B,
 							transparent: true,
-							opacity: 0.00,
+							opacity: 1.00,
 						}),
 					
 						modules: [
@@ -321,7 +322,7 @@ export class GameComponent implements OnInit {
 						},
 						
 						position: {
-							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .3 : -.3),
+							x: j * BasicParam.gridWidth - BasicParam.gridWidth * i / 2 + BasicParam.gridWidth * (k ? .35 : -.35),
 							y: routY - BasicParam.diceSize / 2 + 5
 						}
 					});
@@ -452,9 +453,7 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 0,
-					restitution: 1,
-					friction: 2,
+					mass: 0
 				})
 			],
 	
@@ -482,9 +481,7 @@ export class GameComponent implements OnInit {
 	
 			modules: [
 				new PHYSICS.BoxModule({
-					mass: 0,
-					restitution: 1,
-					friction: 2,
+					mass: 0
 				})
 			],
 	
@@ -547,7 +544,6 @@ export class GameComponent implements OnInit {
 						mass: BasicParam.diceMass,
 						restitution: BasicParam.diceRestitution,
 						friction: BasicParam.diceFriction,
-						pressure: 500
 					})
 				],
 		
@@ -569,7 +565,7 @@ export class GameComponent implements OnInit {
 					setTimeout(() => {
 						this.diceObject[i]['position'] = new THREE.Vector3(BasicParam.diceSize * (i - BasicParam.dicesPerScreen / 2), tableY + BasicParam.diceSize / 2, 0);
 						this.diceIsEnable[i] = true;
-						this.startable = true;
+						this.dicePath[i] = null;
 					}, BasicParam.delayPeriod);
 					this.diceIsReached[i] = true;
 				}
@@ -600,6 +596,8 @@ export class GameComponent implements OnInit {
     // Start the app
 		this._container.start();
 		new WHS.Loop(() => {
+			this.updateRoute();
+			
 		}).start(this._container);
   }
 
@@ -613,8 +611,7 @@ export class GameComponent implements OnInit {
 	}
 	
 	fallDice() {
-		this.startable = false;
-		
+	
 
 		this.planAll = [];
 		this.planOne = [];
@@ -625,20 +622,26 @@ export class GameComponent implements OnInit {
 		console.log(this.plinkoService.dice, this.plinkoService.hole);
 		console.log(this.planAll[selectedPlan]);
 		
-		this.makeRoute(this.planAll[selectedPlan]);
+		
 		this.holeObject[BasicParam.grids - this.plinkoService.hole].material.color.setHex(0xff00ff);
- 
+		
+
+		
 
 		for (let i = 0; i < BasicParam.dicesPerScreen; i ++) {
 			if (this.diceIsEnable[i]) {
 				this.diceObject[i]['material'] = this.diceMaterials[this.plinkoService.dice];
 				this.diceObject[i]['position'] = new THREE.Vector3(- BasicParam.gridWidth / 2, BasicParam.gridWidth * (BasicParam.grids + 1) * Math.sin(Math.PI / 3) + BasicParam.offsetY, 0);
+				this.dicePath[i] = JSON.parse(this.planAll[selectedPlan]);
 				this.diceObject[i]['visible'] = true;
 				this.diceIsEnable[i] = false;
 				this.diceIsReached[i]= false;
+				
 				break;
 			}
 		}
+		this.makeRoute();
+
 	 }
 	 
 	 getAllPlan(k) {
@@ -657,36 +660,55 @@ export class GameComponent implements OnInit {
 		}
 	}
 
-	makeRoute(strPath) {
-		const path = JSON.parse(strPath);
+	updateRoute() {
+		for (let d = 0; d < BasicParam.dicesPerScreen; d ++) {
+			if (!this.dicePath[d]) continue;
+			for (let i = 0; i < BasicParam.grids; i ++) {
+				const {j, k, v} = this.diceRouterInfo[d][i];
+				const r = this.diceObject[d].position.y < this.routerObject[i][j][k].position.y + BasicParam.gridWidth / 2 && 
+									this.diceObject[d].position.y > this.routerObject[i][j][k].position.y - BasicParam.gridWidth / 2;
+				this.routerObject[i][j][k].position.z = (v && r) ? 0 : -100;
+				this.routerSkewObject[i][j][k].position.z = (v || !r) ? -100 : 0;
+			}
+		}
+	}
+
+	makeRoute() {
 		let fk = null;
+		this.diceRouterInfo = [];
 		for (let i = 0; i < BasicParam.grids; i ++) {
 			for (let j = 0; j < i + 1; j ++) {
 				for (let k = 0; k < 2; k ++) {
-					this.routerObject[i][j][k]['position']['z'] = 0;
+					this.routerObject[i][j][k]['position']['z'] = -100;
 					this.routerSkewObject[i][j][k]['position']['z'] = -100;
-					if (path[i] === j) {
-						let sk = path[i+1] - path[i];
-						
-						if (sk === k) {
-							this.routerObject[i][j][k]['position']['z'] = -100;
-							this.routerSkewObject[i][j][k]['position']['z'] = -100;
-						} else {
+				}
+			}
+		}
+
+
+		for (let l = 0; l < BasicParam.dicesPerScreen; l ++) {
+			this.diceRouterInfo[l] = [];
+			if (!this.dicePath[l]) continue;
+			for (let i = 0; i < BasicParam.grids; i ++) {
+				for (let j = 0; j < i + 1; j ++) {
+					for (let k = 0; k < 2; k ++) {
+							
+						if (this.dicePath[l][i] === j) {
+							let sk = this.dicePath[l][i+1] - this.dicePath[l][i];
+
 							if (fk === sk) {
-								this.routerObject[i][j][k]['position']['z'] = -100;
-								this.routerSkewObject[i][j][k]['position']['z'] = 0;
-								 			
+								// this.routerObject[i][j][k].position.z = -100;
+								// this.routerSkewObject[i][j][k].position.z = 0;
+								this.diceRouterInfo[l][i] = {j: j, k: k, v: false};
 							} else {
-								this.routerObject[i][j][k]['position']['z'] = 0;
-								this.routerSkewObject[i][j][k]['position']['z'] = -100;
+								// this.routerObject[i][j][k].position.z = 0;
+								// this.routerSkewObject[i][j][k].position.z = -100;
+								this.diceRouterInfo[l][i] = {j: j, k: k, v: true};
 							}
 							fk = sk;
 						}
-						
-					} else {
-						this.routerObject[i][j][k]['position']['z'] = -100;
+
 					}
-					
 
 				}
 			}
