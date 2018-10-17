@@ -1,12 +1,12 @@
 import { EventEmitter, Injectable } from '@angular/core';
-
+import { BasicParam } from './../app/game/config';
 @Injectable({
   providedIn: 'root'
 })
 export class PlinkoService {
-  events: number = 0; // increasing before clearing
-  dice: number; // 0-blue, 1-green, 2-red
-  hole: number; // 0, 1, 2, 3, 4, ... , 13
+  events: number = 0; 
+  dice: number; 
+  hole: number; 
   isReady: boolean = true;
   
   eventOccured: EventEmitter<any> = new EventEmitter<any>();
@@ -15,7 +15,7 @@ export class PlinkoService {
 
   setDiceAndHole(): void {
     this.dice = Math.floor(Math.random() * 3);
-    this.hole = Math.floor(Math.random() * 14);
+    this.hole = Math.floor(Math.random() * (BasicParam.grids + 1));
   }
 
   fallDice(): void {
@@ -26,8 +26,8 @@ export class PlinkoService {
       this.isReady = false;
       setTimeout (() => {
         this.isReady = true;
-      }, 2000);
+        // this.fallDice();
+      }, BasicParam.eventDelay);
     }
-
   }
 }

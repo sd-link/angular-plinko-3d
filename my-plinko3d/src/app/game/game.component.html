@@ -1,5 +1,5 @@
 
 <div #rendererContainer></div>
 <p>
-  <button (click)="start()" [ngStyle]="{display: plinkoService.isReady ? '' : 'none', position: 'absolute', 'z-index': 5000}"> start </button>
+  <button (click)="start()" [ngStyle]="{display: plinkoService.isReady ? '' : '', position: 'absolute', 'z-index': 5000}"> {{ diceObject[0] ? diceObject[0].modules[0].data.linearVelocity.y.toFixed(5) : 'start'}} </button>
 </p>
